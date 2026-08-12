@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Application Archive</title>
+<style>
+  :root{
+    --ink:#0f172a; --ink-2:#334155; --mute:#64748b; --faint:#94a3b8; --ghost:#cbd5e1;
+    --line:#e2e8f0; --paper:#ffffff; --ground:#f1f5f9;
+    --sky:#0369a1; --amber:#b45309; --green:#047857; --rose:#be123c;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+  .wrap{max-width:880px;margin:0 auto;padding:32px 16px 64px}
+  @media(min-width:640px){.wrap{padding:48px 24px 80px}}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .mono{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+
+  header.mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;
+    border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:28px}
+  header.mast h1{margin:4px 0 0;font-size:30px;line-height:1.1;letter-spacing:-.02em;font-weight:600}
+  @media(min-width:640px){header.mast h1{font-size:36px}}
+  .tally{text-align:right;color:var(--mute)}
+
+  .card{background:var(--paper);border:1px solid var(--line)}
+  .card-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:12px 20px}
+  .pad{padding:20px}
+
+  button{font:inherit;cursor:pointer}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;border:0;
+    padding:10px 16px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .btn:hover{background:var(--ink-2)}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .btn-quiet{background:none;border:0;color:var(--mute);padding:8px 0;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .btn-quiet:hover{color:var(--ink)}
+  .btn-danger{background:var(--rose)}
+  .btn-out{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--ghost);color:var(--ink-2);
+    padding:7px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .btn-out:hover{border-color:var(--ink);background:var(--ink);color:#fff}
+  .chip{background:var(--paper);border:1px solid var(--ghost);color:var(--mute);padding:7px 12px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .chip:hover{border-color:var(--ink);color:var(--ink)}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .chip .n{color:var(--ghost);margin-left:4px}
+  .chip.on .n{color:var(--faint)}
+
+  .row{display:flex;gap:12px;flex-direction:column;margin-bottom:20px}
+  @media(min-width:640px){.row{flex-direction:row;align-items:center}}
+  .grow{flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+
+  label.f{display:block}
+  label.f .eyebrow{margin-bottom:6px}
+  input[type=text],input[type=date],input[type=url],select,textarea{
+    width:100%;font:inherit;color:var(--ink);background:#fff;border:1px solid var(--ghost);
+    border-radius:2px;padding:9px 12px}
+  textarea{resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  ::placeholder{color:var(--ghost)}
+  .grid{display:grid;gap:16px;margin-bottom:20px}
+  @media(min-width:640px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}}
+  .hint{margin:6px 0 0;font-size:12px;color:var(--faint)}
+
+  .slots{display:grid;gap:12px}
+  @media(min-width:640px){.slots{grid-template-columns:1fr 1fr 1fr}}
+  .slot{border:1px solid var(--line);padding:12px}
+  .slot-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .slot-name{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+  .attach{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:none;
+    border:1px dashed var(--ghost);color:var(--mute);padding:9px;font-size:13px}
+  .attach:hover{border-color:var(--ink);color:var(--ink)}
+  .fileline{display:flex;gap:8px;align-items:flex-start}
+  .fileline .nm{flex:1;min-width:0}
+  .nm p{margin:0;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .strip{display:flex;gap:4px}
+  .tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;padding:3px 7px;border-radius:2px}
+  .tag.off{background:none;border-style:dashed;border-color:var(--ghost);color:var(--ghost)}
+
+  ul.records{list-style:none;margin:0;padding:0}
+  ul.records li{margin-bottom:8px}
+  .rec{width:100%;display:flex;flex-direction:column;gap:12px;text-align:left;background:var(--paper);
+    border:1px solid var(--line);padding:16px}
+  .rec:hover{border-color:var(--ink)}
+  @media(min-width:640px){.rec{flex-direction:row;align-items:center}}
+  .rec .main{display:flex;gap:12px;flex:1;min-width:0}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:7px}
+  .rec .title{margin:2px 0 0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rec .meta{margin:5px 0 0;color:var(--faint)}
+  .rec .side{display:flex;align-items:center;gap:12px;flex:none;padding-left:20px}
+  @media(min-width:640px){.rec .side{padding-left:0}}
+  .stage-chip{border:1px solid;padding:4px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+
+  .empty{background:var(--paper);border:1px dashed var(--ghost);padding:56px 24px;text-align:center}
+  .empty p{margin:0 auto;max-width:380px}
+  .empty .sub{margin-top:6px;font-size:13px;color:var(--faint)}
+
+  .detail-head{border-bottom:1px solid var(--line);padding:24px 20px}
+  .detail-head h2{margin:8px 0 0;font-size:24px;line-height:1.15;letter-spacing:-.01em;font-weight:600}
+  @media(min-width:640px){.detail-head h2{font-size:30px}}
+  .sect{border-bottom:1px solid var(--line);padding:20px}
+  .doc{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #f1f5f9}
+  .doc:first-child{border-top:0}
+  .doc .lbl{width:64px;flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+  .notes{white-space:pre-wrap;margin:0;color:var(--ink-2);font-size:14px}
+  a{color:var(--sky)}
+  .foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--ghost);margin-top:32px;padding-top:16px}
+  .flag{border-left:2px solid var(--ink);background:var(--paper);padding:8px 14px;margin-bottom:20px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+  .warn{display:flex;gap:8px;border:1px solid #fecdd3;background:#fff1f2;color:#9f1239;padding:10px 12px;font-size:13px;margin-bottom:20px}
+  .modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+  .modal .box{background:#fff;border:1px solid var(--ghost);padding:20px;max-width:380px;width:100%}
+  svg.i{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .hide{display:none}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- icons ---------- */
+const I = {
+  plus:'<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  search:'<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  file:'<svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>',
+  down:'<svg class="i" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>',
+  eye:'<svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  clip:'<svg class="i" viewBox="0 0 24 24"><path d="M21 12l-8.5 8.5a4.95 4.95 0 1 1-7-7L13 5a3.5 3.5 0 1 1 5 5l-8.5 8.5a2 2 0 1 1-3-3L15 7"/></svg>',
+  x:'<svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  check:'<svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>',
+  pencil:'<svg class="i" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  trash:'<svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',
+  back:'<svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  box:'<svg class="i" viewBox="0 0 24 24"><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8"/><path d="M2 3h20v5H2z"/><path d="M10 12h4"/></svg>',
+  db:'<svg class="i" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>',
+  up:'<svg class="i" viewBox="0 0 24 24"><path d="M12 21V9"/><path d="M7 13l5-5 5 5"/><path d="M5 3h14"/></svg>',
+  alert:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
+};
+
+/* ---------- storage: IndexedDB ---------- */
+const DB='job-archive', VER=1;
+let _db=null, storageError=null;
+
+function openDB(){
+  return new Promise((res,rej)=>{
+    if(!('indexedDB' in window)) return rej(new Error('no-idb'));
+    const r=indexedDB.open(DB,VER);
+    r.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('records')) db.createObjectStore('records',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('files')) db.createObjectStore('files',{keyPath:'key'});
+    };
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error||new Error('idb-blocked'));
+  });
+}
+async function db(){ if(!_db) _db=await openDB(); return _db; }
+async function op(store,mode,fn){
+  const d=await db();
+  return new Promise((res,rej)=>{
+    const t=d.transaction(store,mode);
+    const s=t.objectStore(store);
+    let out;
+    try{ out=fn(s); }catch(e){ return rej(e); }
+    t.oncomplete=()=>res(out && out.result!==undefined ? out.result : out);
+    t.onerror=()=>rej(t.error);
+    t.onabort=()=>rej(t.error||new Error('aborted'));
+  });
+}
+const allRecords = ()=>op('records','readonly',s=>s.getAll());
+const putRecord  = r=>op('records','readwrite',s=>s.put(r));
+const delRecord  = id=>op('records','readwrite',s=>s.delete(id));
+const putFile    = f=>op('files','readwrite',s=>s.put(f));
+const getFile    = k=>op('files','readonly',s=>s.get(k));
+const delFile    = k=>op('files','readwrite',s=>s.delete(k));
+const allFiles   = ()=>op('files','readonly',s=>s.getAll());
+const fkey=(id,slot)=>id+':'+slot;
+
+/* ---------- constants ---------- */
+const SLOTS=[{id:'cv',label:'CV',note:'core'},{id:'cover',label:'Cover',note:'optional'},{id:'extra',label:'Extra',note:'optional'}];
+const STAGES=[
+  {id:'submitted',label:'Submitted',dot:'#94a3b8',fg:'#334155',bg:'#f1f5f9',bd:'#e2e8f0'},
+  {id:'screening',label:'Screening',dot:'#0284c7',fg:'#075985',bg:'#f0f9ff',bd:'#bae6fd'},
+  {id:'interview',label:'Interview',dot:'#d97706',fg:'#92400e',bg:'#fffbeb',bd:'#fde68a'},
+  {id:'offer',label:'Offer',dot:'#059669',fg:'#065f46',bg:'#ecfdf5',bd:'#a7f3d0'},
+  {id:'closed',label:'Closed',dot:'#fb7185',fg:'#9f1239',bg:'#fff1f2',bd:'#fecdd3'},
+];
+const stageOf=id=>STAGES.find(s=>s.id===id)||STAGES[0];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kb=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
+const today=()=>new Date().toISOString().slice(0,10);
+const ref=n=>'APP-'+String(n||0).padStart(3,'0');
+function fmtDate(s){ if(!s) return '—'; const d=new Date(s+'T00:00:00');
+  return isNaN(d)?s:d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function daysSince(s){ if(!s) return null; const d=new Date(s+'T00:00:00');
+  return isNaN(d)?null:Math.max(0,Math.round((Date.now()-d.getTime())/86400000)); }
+
+/* ---------- state ---------- */
+const S={ records:[], loading:true, view:{name:'list'}, q:'', filter:'all', flag:'', confirm:null,
+          pending:{}, removed:[], formErr:'', busy:false };
+const app=document.getElementById('app');
+
+function flag(msg){ S.flag=msg; render(); clearTimeout(flag._t); flag._t=setTimeout(()=>{S.flag='';render();},3000); }
+
+async function boot(){
+  try{ S.records=await allRecords(); }
+  catch(e){ storageError=e; }
+  S.loading=false; render();
+}
+
+/* ---------- helpers ---------- */
+function saveBlob(name,blob){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+}
+function counts(){
+  const c={all:S.records.length};
+  STAGES.forEach(s=>c[s.id]=S.records.filter(r=>(r.stage||'submitted')===s.id).length);
+  return c;
+}
+function visible(){
+  const t=S.q.trim().toLowerCase();
+  return S.records
+    .filter(r=>S.filter==='all'||(r.stage||'submitted')===S.filter)
+    .filter(r=>!t||[r.company,r.title,r.source,r.notes,ref(r.n)].concat((r.files||[]).map(f=>f.name))
+      .filter(Boolean).some(v=>String(v).toLowerCase().includes(t)))
+    .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||(b.n||0)-(a.n||0));
+}
+const strip=files=>'<div class="strip">'+SLOTS.map(s=>
+  '<span class="tag'+((files||[]).some(f=>f.slot===s.id)?'':' off')+'">'+s.label+'</span>').join('')+'</div>';
+
+/* ---------- views ---------- */
+function viewList(){
+  const c=counts(), rows=visible();
+  return `
+  <div class="row">
+    <button class="btn" data-act="new">${I.plus} Log an application</button>
+    <div class="grow" style="position:relative">
+      <span style="position:absolute;left:12px;top:11px;color:var(--faint)">${I.search}</span>
+      <input type="text" id="q" value="${esc(S.q)}" placeholder="Search company, role, filename, notes" style="padding-left:36px">
+    </div>
+  </div>
+  <div class="chips">
+    ${[{id:'all',label:'All'}].concat(STAGES).map(s=>
+      `<button class="chip${S.filter===s.id?' on':''}" data-act="filter" data-id="${s.id}">${s.label}<span class="n">${c[s.id]||0}</span></button>`).join('')}
+  </div>
+  ${rows.length===0 ? emptyState() : '<ul class="records">'+rows.map(recordRow).join('')+'</ul>'}
+  ${S.records.length?`
+  <div class="foot">
+    <div style="display:flex;flex-wrap:wrap;gap:16px">
+      <button class="btn-quiet" data-act="csv">${I.db} Export index (CSV)</button>
+      <button class="btn-quiet" data-act="backup">${I.down} Download full backup</button>
+      <button class="btn-quiet" data-act="restore">${I.up} Restore backup</button>
+    </div>
+    <span class="mono" style="color:var(--faint)">Stored in this browser only</span>
+  </div>`:''}
+  <input type="file" id="restore-input" accept="application/json" class="hide">`;
+}
+function emptyState(){
+  return S.records.length===0 ? `
+    <div class="empty">
+      <div style="color:var(--ghost);margin-bottom:10px">${I.box}</div>
+      <p>The drawer is empty.</p>
+      <p class="sub">Log your first application and attach the exact CV you sent. When the call comes, you'll know which version they read.</p>
+      <div style="margin-top:20px"><button class="btn" data-act="new">${I.plus} Log an application</button></div>
+    </div>`
+  : `<div class="empty"><p style="color:var(--mute)">No records match that. Clear the search or pick another stage.</p></div>`;
+}
+function recordRow(r){
+  const st=stageOf(r.stage), age=daysSince(r.date);
+  const noCv=!(r.files||[]).some(f=>f.slot==='cv');
+  return `<li><button class="rec" data-act="open" data-id="${r.id}">
+    <span class="main">
+      <span class="dot" style="background:${st.dot}"></span>
+      <span style="min-width:0">
+        <span style="display:flex;gap:8px;align-items:baseline">
+          <span class="mono" style="color:var(--ghost)">${ref(r.n)}</span>
+          <span class="mono" style="color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.company)}</span>
+        </span>
+        <p class="title">${esc(r.title)}</p>
+        <p class="meta mono">${fmtDate(r.date)}${age!==null?' · '+age+(age===1?' day':' days')+' ago':''}${noCv?' · <span style="color:var(--amber)">no CV attached</span>':''}</p>
+      </span>
+    </span>
+    <span class="side">
+      ${strip(r.files)}
+      <span class="stage-chip" style="color:${st.fg};background:${st.bg};border-color:${st.bd}">${st.label}</span>
+    </span>
+  </button></li>`;
+}
+
+function viewForm(){
+  const ed=S.view.name==='edit'?S.view.rec:null;
+  const v=(k,d)=>esc(ed?(ed[k]==null?d:ed[k]):d);
+  return `
+  <div class="card">
+    <div class="card-head">
+      <span class="eyebrow">${ed?'Edit record '+ref(ed.n):'New record'}</span>
+      <button class="btn-quiet" data-act="cancel" aria-label="Close" style="color:var(--faint)">${I.x}</button>
+    </div>
+    <div class="pad">
+      ${S.formErr?`<div class="warn">${I.alert}<span>${esc(S.formErr)}</span></div>`:''}
+      <div class="grid g2">
+        <label class="f"><span class="eyebrow">Company</span>
+          <input type="text" id="f-company" value="${v('company','')}" placeholder="World Bank"></label>
+        <label class="f"><span class="eyebrow">Role</span>
+          <input type="text" id="f-title" value="${v('title','')}" placeholder="Research Analyst"></label>
+      </div>
+      <div class="grid g3">
+        <label class="f"><span class="eyebrow">Date sent</span>
+          <input type="date" id="f-date" value="${v('date',today())}"></label>
+        <label class="f"><span class="eyebrow">Stage</span>
+          <select id="f-stage">${STAGES.map(s=>`<option value="${s.id}"${(ed&&ed.stage===s.id)?' selected':''}>${s.label}</option>`).join('')}</select></label>
+        <label class="f"><span class="eyebrow">Found via</span>
+          <input type="text" id="f-source" value="${v('source','')}" placeholder="LinkedIn, referral…"></label>
+      </div>
+      <div class="grid">
+        <label class="f"><span class="eyebrow">Posting link</span>
+          <input type="url" id="f-link" value="${v('link','')}" placeholder="https://"></label>
+      </div>
+
+      <span class="eyebrow" style="display:block;margin-bottom:8px">Documents submitted</span>
+      <div class="slots">${SLOTS.map(s=>slotBox(s,ed)).join('')}</div>
+      <p class="hint" style="margin-bottom:20px">Extra holds anything else you sent — application questions, writing sample, transcript.</p>
+
+      <div class="grid">
+        <label class="f"><span class="eyebrow">Prep notes</span>
+          <textarea id="f-notes" rows="4" placeholder="Led CV with the Bangladesh EdTech RCT. Cover letter framed around their impact evaluation team…">${v('notes','')}</textarea>
+          <p class="hint">What you tailored, who you spoke to, deadlines. This is what you'll read before the call.</p></label>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;border-top:1px solid var(--line);padding-top:16px">
+        <button class="btn" data-act="save" ${S.busy?'disabled':''}>${I.check} ${S.busy?'Filing…':(ed?'Save changes':'File application')}</button>
+        <button class="btn-quiet" data-act="cancel" style="color:var(--faint)">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+function slotBox(s,ed){
+  const picked=S.pending[s.id];
+  const old=ed&&!S.removed.includes(s.id)?(ed.files||[]).find(f=>f.slot===s.id):null;
+  const cur=picked||old;
+  return `<div class="slot">
+    <div class="slot-top"><span class="slot-name">${s.label}</span>
+      <span class="mono" style="color:${s.note==='core'?'var(--mute)':'var(--ghost)'}">${s.note}</span></div>
+    ${cur?`<div class="fileline">
+        <span style="color:var(--mute);margin-top:2px">${I.file}</span>
+        <span class="nm"><p>${esc(cur.name)}</p>
+          <p class="mono" style="color:var(--faint);letter-spacing:0">${kb(cur.size)}${picked&&old?' · replaces old':''}</p></span>
+        <button class="btn-quiet" data-act="clear-slot" data-id="${s.id}" style="padding:0;color:var(--ghost)">${I.x}</button>
+      </div>`
+      :`<button class="attach" data-act="pick" data-id="${s.id}">${I.clip} Attach file</button>`}
+    <input type="file" class="hide" id="in-${s.id}" data-slot="${s.id}">
+  </div>`;
+}
+
+function viewDetail(r){
+  const st=stageOf(r.stage), age=daysSince(r.date);
+  return `
+  <div class="card">
+    <div class="card-head">
+      <button class="btn-quiet" data-act="list">${I.back} All records</button>
+      <span class="mono" style="color:var(--faint)">${ref(r.n)}</span>
+    </div>
+    <div class="detail-head">
+      <span class="eyebrow">${esc(r.company)}</span>
+      <h2>${esc(r.title)}</h2>
+      <p class="mono" style="color:var(--mute);margin:12px 0 0">Sent ${fmtDate(r.date)}${age!==null?' · '+age+(age===1?' day':' days')+' ago':''}${r.source?' · via '+esc(r.source):''}</p>
+      ${r.link?`<p style="margin:8px 0 0;font-size:13px;word-break:break-all"><a href="${esc(r.link)}" target="_blank" rel="noreferrer">${esc(r.link)}</a></p>`:''}
+    </div>
+    <div class="sect">
+      <span class="eyebrow" style="display:block;margin-bottom:8px">Stage</span>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${STAGES.map(s=>`<button class="chip${r.stage===s.id?' on':''}" data-act="stage" data-id="${s.id}">${s.label}</button>`).join('')}
+      </div>
+    </div>
+    <div class="sect">
+      <span class="eyebrow" style="display:block;margin-bottom:8px">What you submitted</span>
+      ${SLOTS.map(s=>{
+        const f=(r.files||[]).find(x=>x.slot===s.id);
+        return `<div class="doc"><span class="lbl">${s.label}</span>
+          ${f?`<span class="nm" style="flex:1"><p>${esc(f.name)}</p>
+                 <p class="mono" style="color:var(--faint);letter-spacing:0">${kb(f.size)}</p></span>
+               <button class="btn-out" data-act="view" data-id="${s.id}">${I.eye} View</button>
+               <button class="btn-out" data-act="get" data-id="${s.id}">${I.down} Save</button>`
+             :`<span style="flex:1;color:var(--ghost);font-size:13px">Nothing filed</span>`}
+        </div>`;}).join('')}
+    </div>
+    <div class="sect">
+      <span class="eyebrow" style="display:block;margin-bottom:8px">Prep notes</span>
+      ${r.notes?`<p class="notes">${esc(r.notes)}</p>`
+        :`<p style="color:var(--ghost);font-size:13px;margin:0">Empty. Add what you tailored while it's still fresh.</p>`}
+    </div>
+    <div class="pad" style="display:flex;gap:20px">
+      <button class="btn-quiet" data-act="edit">${I.pencil} Edit</button>
+      <button class="btn-quiet" data-act="ask-delete" style="color:var(--faint)">${I.trash} Delete record</button>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const c=counts();
+  let body;
+  if(storageError){
+    body=`<div class="card"><div class="pad">
+      <div class="warn">${I.alert}<span>This browser blocked local storage, so nothing can be saved.</span></div>
+      <p style="font-size:14px;color:var(--ink-2)">Two usual causes: the page was opened as a <code>file://</code> path by double-clicking it, or you're in a private window. Serve the folder over <code>http://localhost</code> instead and reload.</p>
+    </div></div>`;
+  } else if(S.loading){
+    body=`<div class="card"><div class="pad" style="text-align:center;padding:56px 20px">
+      <span class="mono" style="color:var(--faint)">Opening the drawer…</span></div></div>`;
+  } else if(S.view.name==='new'||S.view.name==='edit'){ body=viewForm(); }
+  else if(S.view.name==='detail'){
+    const r=S.records.find(x=>x.id===S.view.id);
+    body=r?viewDetail(r):viewList();
+  } else { body=viewList(); }
+
+  app.innerHTML=`
+    <header class="mast">
+      <div>
+        <div style="display:flex;gap:8px;align-items:center;color:var(--ink)">${I.box}<span class="eyebrow" style="color:var(--mute)">Application archive</span></div>
+        <h1>What did I send them?</h1>
+      </div>
+      <div class="tally mono">
+        <div>${c.all} ${c.all===1?'record':'records'}</div>
+        <div>${c.screening+c.interview} live</div>
+      </div>
+    </header>
+    ${S.flag?`<div class="flag">${esc(S.flag)}</div>`:''}
+    ${body}
+    ${S.confirm?confirmModal(S.confirm):''}`;
+
+  const q=document.getElementById('q');
+  if(q){ q.addEventListener('input',e=>{ S.q=e.target.value; const p=e.target.selectionStart; render();
+      const n=document.getElementById('q'); if(n){ n.focus(); n.setSelectionRange(p,p);} }); }
+}
+function confirmModal(r){
+  const n=(r.files||[]).length;
+  return `<div class="modal"><div class="box">
+    <span class="eyebrow">Delete ${ref(r.n)}</span>
+    <p style="font-size:14px;color:var(--ink-2)">This removes the record for ${esc(r.company)} and the ${n} attached file${n===1?'':'s'}. It can't be undone.</p>
+    <div style="display:flex;gap:16px;align-items:center;margin-top:20px">
+      <button class="btn btn-danger" data-act="do-delete">Delete</button>
+      <button class="btn-quiet" data-act="cancel-delete">Keep it</button>
+    </div></div></div>`;
+}
+
+/* ---------- actions ---------- */
+function readForm(){
+  const g=id=>{const el=document.getElementById(id);return el?el.value:'';};
+  return {company:g('f-company').trim(),title:g('f-title').trim(),date:g('f-date'),
+          stage:g('f-stage'),source:g('f-source').trim(),link:g('f-link').trim(),notes:g('f-notes')};
+}
+async function save(){
+  const m=readForm();
+  if(!m.company||!m.title){ S.formErr='Company and role are both needed to file this.'; render(); return; }
+  S.busy=true; S.formErr=''; render();
+  try{
+    const ed=S.view.name==='edit'?S.view.rec:null;
+    const id=ed?ed.id:'a'+Date.now().toString(36);
+    let files=(ed?ed.files||[]:[]).filter(f=>!S.removed.includes(f.slot));
+    for(const slot of Object.keys(S.pending)){
+      const f=S.pending[slot];
+      await putFile({key:fkey(id,slot),name:f.name,type:f.type,size:f.size,blob:f});
+      files=files.filter(x=>x.slot!==slot);
+      files.push({slot,name:f.name,size:f.size,type:f.type});
+    }
+    for(const slot of S.removed){ try{ await delFile(fkey(id,slot)); }catch(e){} }
+    files.sort((a,b)=>SLOTS.findIndex(s=>s.id===a.slot)-SLOTS.findIndex(s=>s.id===b.slot));
+    const n=ed?ed.n:S.records.reduce((mx,r)=>Math.max(mx,r.n||0),0)+1;
+    const rec=Object.assign({id,n,created:ed?ed.created:new Date().toISOString()},m,{files});
+    await putRecord(rec);
+    S.records=await allRecords();
+    S.pending={}; S.removed=[]; S.busy=false;
+    if(ed){ S.view={name:'detail',id}; flag('Changes saved'); }
+    else { S.view={name:'list'}; flag('Filed as '+ref(n)); }
+  }catch(e){
+    S.busy=false; S.formErr='Could not save: '+(e&&e.message?e.message:'storage error'); render();
+  }
+}
+async function openStored(slot,download){
+  const r=S.records.find(x=>x.id===S.view.id); if(!r) return;
+  const f=(r.files||[]).find(x=>x.slot===slot); if(!f) return;
+  try{
+    const stored=await getFile(fkey(r.id,slot));
+    if(!stored||!stored.blob) throw new Error('missing');
+    if(download) saveBlob(stored.name,stored.blob);
+    else {
+      const url=URL.createObjectURL(stored.blob);
+      const w=window.open(url,'_blank');
+      if(!w) saveBlob(stored.name,stored.blob);
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }
+  }catch(e){ flag('That file is missing — re-attach it from Edit'); }
+}
+function exportCsv(){
+  const head=['ref','company','role','date_sent','stage','found_via','cv','cover','extra','link','notes'];
+  const rows=[head].concat(S.records.slice().sort((a,b)=>(a.n||0)-(b.n||0)).map(r=>{
+    const g=s=>{const f=(r.files||[]).find(x=>x.slot===s);return f?f.name:'';};
+    return [ref(r.n),r.company,r.title,r.date,stageOf(r.stage).label,r.source||'',g('cv'),g('cover'),g('extra'),r.link||'',String(r.notes||'').replace(/\s+/g,' ')];
+  }));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  saveBlob('applications-'+today()+'.csv',new Blob([csv],{type:'text/csv'}));
+}
+function blobToDataUrl(b){ return new Promise((res,rej)=>{const fr=new FileReader();
+  fr.onload=()=>res(fr.result); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(b);}); }
+async function backup(){
+  flag('Building backup…');
+  const files=await allFiles();
+  const out={format:'job-archive-backup',version:1,exported:new Date().toISOString(),
+    records:S.records,files:[]};
+  for(const f of files){ out.files.push({key:f.key,name:f.name,type:f.type,size:f.size,data:await blobToDataUrl(f.blob)}); }
+  saveBlob('archive-backup-'+today()+'.json',new Blob([JSON.stringify(out)],{type:'application/json'}));
+  flag('Backup downloaded');
+}
+async function restore(file){
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+    if(data.format!=='job-archive-backup') throw new Error('not a backup file');
+    for(const r of data.records||[]) await putRecord(r);
+    for(const f of data.files||[]){
+      const res=await fetch(f.data); const blob=await res.blob();
+      await putFile({key:f.key,name:f.name,type:f.type,size:f.size,blob});
+    }
+    S.records=await allRecords();
+    flag('Restored '+(data.records||[]).length+' records');
+  }catch(e){ flag('Restore failed: '+(e.message||'bad file')); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('[data-act]'); if(!t) return;
+  const act=t.dataset.act, id=t.dataset.id;
+  if(act==='new'){ S.pending={};S.removed=[];S.formErr='';S.view={name:'new'};render(); }
+  else if(act==='filter'){ S.filter=id; render(); }
+  else if(act==='open'){ S.view={name:'detail',id}; render(); }
+  else if(act==='list'){ S.view={name:'list'}; render(); }
+  else if(act==='edit'){ const r=S.records.find(x=>x.id===S.view.id);
+    S.pending={};S.removed=[];S.formErr='';S.view={name:'edit',rec:r};render(); }
+  else if(act==='cancel'){ const ed=S.view.name==='edit'?S.view.rec:null;
+    S.pending={};S.removed=[];S.formErr='';S.view=ed?{name:'detail',id:ed.id}:{name:'list'};render(); }
+  else if(act==='pick'){ const el=document.getElementById('in-'+id); if(el) el.click(); }
+  else if(act==='clear-slot'){ delete S.pending[id];
+    const ed=S.view.name==='edit'?S.view.rec:null;
+    if(ed&&(ed.files||[]).some(f=>f.slot===id)&&!S.removed.includes(id)) S.removed.push(id);
+    render(); }
+  else if(act==='save'){ await save(); }
+  else if(act==='stage'){ const r=S.records.find(x=>x.id===S.view.id);
+    if(r){ r.stage=id; await putRecord(r); S.records=await allRecords(); render(); } }
+  else if(act==='get'){ await openStored(id,true); }
+  else if(act==='view'){ await openStored(id,false); }
+  else if(act==='ask-delete'){ S.confirm=S.records.find(x=>x.id===S.view.id); render(); }
+  else if(act==='cancel-delete'){ S.confirm=null; render(); }
+  else if(act==='do-delete'){ const r=S.confirm;
+    for(const f of r.files||[]){ try{ await delFile(fkey(r.id,f.slot)); }catch(err){} }
+    await delRecord(r.id); S.records=await allRecords();
+    S.confirm=null; S.view={name:'list'}; flag(ref(r.n)+' deleted'); }
+  else if(act==='csv'){ exportCsv(); }
+  else if(act==='backup'){ await backup(); }
+  else if(act==='restore'){ document.getElementById('restore-input').click(); }
+});
+document.addEventListener('change',async e=>{
+  const el=e.target;
+  if(el.id==='restore-input'&&el.files[0]){ await restore(el.files[0]); el.value=''; }
+  else if(el.dataset&&el.dataset.slot&&el.files[0]){
+    S.pending[el.dataset.slot]=el.files[0]; S.formErr=''; render();
+  }
+});
+boot();
+</script>
+</body>
+</html>
